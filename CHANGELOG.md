@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.2.0](https://github.com/dessant/buster/compare/v3.1.4...v3.2.0) (2026-06-08)
+
+
+### Features
+
+* add solver button tooltip in Firefox ([0d752e1](https://github.com/dessant/buster/commit/0d752e1927494a7e362bab5a3ef60cde17026d8b))
+
 ## [3.1.4](https://github.com/dessant/buster/compare/v3.1.3...v3.1.4) (2026-06-03)
 
 
