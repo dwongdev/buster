@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.2.1](https://github.com/dessant/buster/compare/v3.2.0...v3.2.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* update dependencies ([480fa67](https://github.com/dessant/buster/commit/480fa67d2e2d1ecea9166ff07318dc2e5725bfc1))
+
 ## [3.2.0](https://github.com/dessant/buster/compare/v3.1.4...v3.2.0) (2026-06-08)
 
 
