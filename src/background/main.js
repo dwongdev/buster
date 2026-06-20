@@ -13,10 +13,14 @@ import {
   showOptionsPage,
   setAppVersion,
   getStartupState,
-  insertBaseModule,
-  getPromptApiStatus,
-  initPromptApi
+  insertBaseModule
 } from 'utils/app';
+import {
+  getPromptApiStatus,
+  getPromptApiResult,
+  getTransformersApiStatus,
+  getTransformersApiResult
+} from 'utils/models';
 import {
   executeScript,
   scriptsAllowed,
@@ -634,47 +638,7 @@ async function getMicrosoftSpeechApiResult(
   }
 }
 
-async function getPromptApiResult(audioContent) {
-  const result = {};
-
-  const session = await initPromptApi();
-
-  if (session) {
-    try {
-      const data = await session.prompt([
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              value:
-                'transcribe this audio, the output cannot contain punctuation or uppercase letters'
-            },
-            {type: 'audio', value: audioContent}
-          ]
-        }
-      ]);
-
-      if (data) {
-        result.text = data.trim();
-      }
-    } catch (err) {
-    } finally {
-      session.destroy();
-    }
-  }
-
-  return result;
-}
-
-async function transcribeAudio(audioUrl, lang) {
-  const audioBuffer = await (
-    await fetch(audioUrl, {credentials: 'omit'})
-  ).arrayBuffer();
-
-  const audioOptions = {trimStart: 1.5, trimEnd: 1.5};
-
-  let audioContent;
+async function getAudioContent(audioBuffer, audioOptions) {
   if (mv3 && !['firefox', 'safari'].includes(targetEnv)) {
     await setupOffscreenDocument({
       url: '/src/offscreen/index.html',
@@ -690,11 +654,20 @@ async function transcribeAudio(audioUrl, lang) {
 
     await browser.offscreen.closeDocument();
 
-    audioContent = base64ToArrayBuffer(audioString);
+    return base64ToArrayBuffer(audioString);
   } else {
-    audioContent = await prepareAudio(audioBuffer, audioOptions);
+    return await prepareAudio(audioBuffer, audioOptions);
   }
+}
 
+async function transcribeAudio(audioUrl, lang) {
+  const audioBuffer = await (
+    await fetch(audioUrl, {credentials: 'omit'})
+  ).arrayBuffer();
+
+  const audioOptions = {trimStart: 1.5, trimEnd: 1.5};
+
+  let audioContent;
   let solution;
 
   const {
@@ -709,15 +682,57 @@ async function transcribeAudio(audioUrl, lang) {
     'enableManagedRemoteServices'
   ]);
 
-  if (
-    speechService === 'managed' &&
-    enableManagedLocalServices &&
-    (await getPromptApiStatus()) === 'available'
-  ) {
-    const result = await getPromptApiResult(audioContent);
+  if (speechService === 'managed' && enableManagedLocalServices) {
+    const status = await getPromptApiStatus({init: true});
 
-    solution = result.text;
-  } else if (
+    if (status === 'available') {
+      audioContent = await getAudioContent(audioBuffer.slice(0), audioOptions);
+
+      const result = await getPromptApiResult(audioContent);
+
+      solution = result.text;
+    } else if (status === 'unavailable') {
+      if (mv3 && !['firefox', 'safari'].includes(targetEnv)) {
+        await setupOffscreenDocument({
+          url: '/src/offscreen/index.html',
+          reasons: ['USER_MEDIA'],
+          justification: 'process audio'
+        });
+
+        const {result} = await sendOffscreenMessage({
+          id: 'transcribeAudio',
+          audioString: arrayBufferToBase64(audioBuffer.slice(0)),
+          audioOptions
+        });
+
+        await browser.offscreen.closeDocument();
+
+        solution = result.text;
+      } else {
+        const status = await getTransformersApiStatus();
+
+        if (status === 'available') {
+          const audioData = await prepareAudio(audioBuffer.slice(0), {
+            ...audioOptions,
+            convertToWav: false
+          });
+
+          const result = await getTransformersApiResult(audioData);
+
+          solution = result.text;
+        }
+      }
+    }
+  }
+
+  if (
+    !audioContent &&
+    (speechService !== 'managed' || (enableManagedRemoteServices && !solution))
+  ) {
+    audioContent = await getAudioContent(audioBuffer, audioOptions);
+  }
+
+  if (
     speechService === 'witSpeechApi' ||
     (speechService === 'managed' && enableManagedRemoteServices && !solution)
   ) {

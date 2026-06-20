@@ -475,6 +475,11 @@
     "description": "Text of the button."
   },
 
+  "buttonLabel_downloadModel": {
+    "message": "Download model",
+    "description": "Text of the button."
+  },
+
   "buttonLabel_installApp": {
     "message": "Install app",
     "description": "Text of the button."
@@ -514,17 +519,6 @@
   "linkText_learnMore": {
     "message": "Learn more",
     "description": "Text of the link."
-  },
-
-  "pageContent_status": {
-    "message": "Status: $STATUS$",
-    "description": "Page content.",
-    "placeholders": {
-      "status": {
-        "content": "$1",
-        "example": "not supported"
-      }
-    }
   },
 
   "pageContent_optionClientAppDownloadDesc": {
@@ -601,6 +595,16 @@
   "pageTitle_contribute": {
     "message": "Contribute",
     "description": "Title of the page."
+  },
+
+  "modelName_geminiNano": {
+    "message": "Gemini Nano",
+    "description": "Model name."
+  },
+
+  "modelName_whisper": {
+    "message": "Whisper",
+    "description": "Model name."
   },
 
   "info_updatingClientApp": {

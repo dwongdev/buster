@@ -495,7 +495,10 @@ async function sliceAudio({audioBuffer, start, end}) {
   return audioSlice;
 }
 
-async function prepareAudio(audio, {trimStart = 0, trimEnd = 0} = {}) {
+async function prepareAudio(
+  audio,
+  {trimStart = 0, trimEnd = 0, convertToWav = true} = {}
+) {
   const audioBuffer = await normalizeAudio(audio);
 
   const audioSlice = await sliceAudio({
@@ -504,7 +507,11 @@ async function prepareAudio(audio, {trimStart = 0, trimEnd = 0} = {}) {
     end: audioBuffer.duration - trimEnd
   });
 
-  return audioBufferToWav(audioSlice);
+  if (convertToWav) {
+    return audioBufferToWav(audioSlice);
+  } else {
+    return audioSlice.getChannelData(0);
+  }
 }
 
 let creatingOffscreenDoc;
@@ -542,13 +549,13 @@ function sendOffscreenMessage(message) {
     const timeoutId = self.setTimeout(function () {
       removeCallbacks();
       reject();
-    }, 20000); // 20 seconds
+    }, 120000); // 2 minutes
 
     const port = browser.runtime.connect({name: 'offscreen'});
     port.postMessage(message);
 
     port.onMessage.addListener(function (response) {
-      port.disconnect();
+      removeCallbacks();
 
       resolve(response);
     });

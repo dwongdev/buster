@@ -154,6 +154,21 @@ export default async function (env, argv) {
               }
             }
           ]
+        },
+        {
+          test: /\.mjs$/,
+          include: /node_modules\/onnxruntime-web/,
+          type: 'javascript/auto',
+          parser: {
+            unknownContextCritical: false
+          }
+        },
+        {
+          test: /\.wasm$/,
+          type: 'asset/resource',
+          generator: {
+            filename: 'wasm/[name][ext]'
+          }
         }
       ]
     },

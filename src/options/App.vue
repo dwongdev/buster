@@ -23,12 +23,33 @@
         </div>
 
         <div
+          class="model-card"
           v-if="
             options.speechService === 'managed' &&
-            options.enableManagedLocalServices
+            options.enableManagedLocalServices &&
+            localServiceStatus
           "
         >
-          {{ getText('pageContent_status', localServiceStatus) }}
+          <div class="model-desc">
+            <div>
+              Model: {{ getText(`modelName_${localServiceStatus.modelId}`) }}
+            </div>
+
+            <div>Status: {{ localServiceStatus.status }}</div>
+          </div>
+
+          <vn-button
+            class="download-button"
+            v-if="
+              localServiceStatus.modelId === 'whisper' &&
+              localServiceStatus.status !== 'ready to use'
+            "
+            :disabled="localServiceStatus.status !== 'ready to download'"
+            @click="downloadTransformersApiModel"
+            variant="elevated"
+          >
+            {{ getText('buttonLabel_downloadModel') }}
+          </vn-button>
         </div>
 
         <div class="option" v-if="options.speechService === 'managed'">
@@ -335,9 +356,9 @@ import {
   showSponsorPage,
   getAppTheme,
   getSponsorUrl,
-  getSponsorLogo,
-  getManagedLocalServiceStatus
+  getSponsorLogo
 } from 'utils/app';
+import {initTransformersApi, getManagedLocalServiceStatus} from 'utils/models';
 import {getText} from 'utils/common';
 import {
   enableContributions,
@@ -410,7 +431,7 @@ export default {
       installGuideUrl: '',
       contributionsEnabled: true,
       sponsorsEnabled: true,
-      localServiceStatus: '',
+      localServiceStatus: null,
 
       theme: '',
 
@@ -568,6 +589,17 @@ export default {
       }
     },
 
+    downloadTransformersApiModel: async function () {
+      await initTransformersApi({callback: this.modelDownloadProgress});
+      this.verifyLocalServices();
+    },
+
+    modelDownloadProgress: function (status) {
+      if (status.status === 'progress_total') {
+        this.localServiceStatus.status = `${Math.trunc(status.progress)}%`;
+      }
+    },
+
     showContribute: async function () {
       await showContributePage();
     },
@@ -673,8 +705,22 @@ export default {
   line-height: 24px;
 }
 
-.client-download {
+.client-download,
+.model-card {
   width: 272px;
+}
+
+.model-card {
+  & .download-button {
+    margin-bottom: 8px;
+  }
+}
+
+.model-desc {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.25px;
+  line-height: 24px;
 }
 
 .download-desc,

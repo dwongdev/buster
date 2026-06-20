@@ -1,4 +1,9 @@
 import {
+  getTransformersApiStatus,
+  getTransformersApiSession,
+  getTransformersApiResult
+} from 'utils/models';
+import {
   arrayBufferToBase64,
   base64ToArrayBuffer,
   prepareAudio
@@ -13,9 +18,30 @@ async function processAudio(audioString, audioOptions) {
   });
 }
 
+async function transcribeAudio(audioString, audioOptions) {
+  const status = await getTransformersApiStatus();
+
+  let result = {};
+
+  if (status === 'available') {
+    const audioBuffer = base64ToArrayBuffer(audioString);
+
+    const audioContent = await prepareAudio(audioBuffer, {
+      ...audioOptions,
+      convertToWav: false
+    });
+
+    result = await getTransformersApiResult(audioContent);
+  }
+
+  messagePort.postMessage({result});
+}
+
 function onMessage(request) {
   if (request.id === 'processAudio') {
     processAudio(request.audioString, request.audioOptions);
+  } else if (request.id === 'transcribeAudio') {
+    transcribeAudio(request.audioString, request.audioOptions);
   }
 }
 

@@ -271,6 +271,18 @@ async function secrets() {
   }
 }
 
+async function wasm(done) {
+  await new Promise(resolve => {
+    src(
+      'node_modules/onnxruntime-web/dist/ort-wasm-simd-threaded.asyncify.@(wasm|mjs)',
+      {encoding: false}
+    )
+      .pipe(dest(path.join(distDir, 'src/wasm')))
+      .on('error', done)
+      .on('finish', resolve);
+  });
+}
+
 function checkEnv(done) {
   if (!['x64', 'ia32'].includes(process.arch)) {
     done();
@@ -294,6 +306,7 @@ function build(done) {
   return series(
     init,
     parallel(js, html, css, images, fonts, locale, manifest, license),
+    wasm,
     secrets
   )(done);
 }

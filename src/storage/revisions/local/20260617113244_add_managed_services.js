@@ -1,5 +1,3 @@
-import {getManagedLocalServiceStatus} from 'utils/app';
-
 const message = 'Add managed services';
 
 const revision = '20260617113244_add_managed_services';
@@ -12,8 +10,7 @@ async function upgrade() {
     changes.speechService = 'managed';
   }
 
-  const localServiceStatus = await getManagedLocalServiceStatus();
-  changes.enableManagedLocalServices = localServiceStatus !== 'not supported';
+  changes.enableManagedLocalServices = true;
   changes.enableManagedRemoteServices = true;
 
   changes.storageVersion = revision;

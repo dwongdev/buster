@@ -54,6 +54,9 @@ const recaptchaUrlRxString = `^https:\/\/(?:www\.)?(?:google\.com|recaptcha\.net
 const recaptchaChallengeUrlRx =
   /^https:\/\/(?:www\.)?(?:google\.com|recaptcha\.net)\/recaptcha\/(?:api2|enterprise)\/bframe.*/;
 
+const noPunctuationRx =
+  /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]/g;
+
 // https://developers.google.com/recaptcha/docs/language
 // https://cloud.google.com/speech-to-text/docs/speech-to-text-supported-languages
 const captchaGoogleSpeechApiLangCodes = {
@@ -400,6 +403,7 @@ export {
   clientAppPlatforms,
   recaptchaUrlRxString,
   recaptchaChallengeUrlRx,
+  noPunctuationRx,
   captchaGoogleSpeechApiLangCodes,
   captchaIbmSpeechApiLangCodes,
   captchaMicrosoftSpeechApiLangCodes,

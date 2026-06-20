@@ -505,52 +505,6 @@ async function pingClientApp({
   return rsp;
 }
 
-async function getPromptApiStatus({params = null} = {}) {
-  if (!params) {
-    params = {
-      expectedInputs: [
-        {type: 'text', languages: ['en']},
-        {type: 'audio', languages: ['en']}
-      ],
-      expectedOutputs: [{type: 'text', languages: ['en']}]
-    };
-  }
-
-  try {
-    return await LanguageModel.availability(params);
-  } catch (err) {}
-}
-
-async function initPromptApi() {
-  const sessionParams = {
-    expectedInputs: [
-      {type: 'text', languages: ['en']},
-      {type: 'audio', languages: ['en']}
-    ],
-    expectedOutputs: [{type: 'text', languages: ['en']}]
-  };
-
-  try {
-    const status = await getPromptApiStatus(sessionParams);
-
-    if (status === 'available') {
-      return await LanguageModel.create(sessionParams);
-    }
-  } catch (err) {}
-}
-
-async function getManagedLocalServiceStatus() {
-  const status = await getPromptApiStatus();
-
-  if (status === 'available') {
-    return 'ready to use';
-  } else if (!status || status === 'unavailable') {
-    return 'not supported';
-  } else {
-    return status;
-  }
-}
-
 function meanSleep(ms) {
   const maxDeviation = 0.1 * ms;
   return sleep(getRandomInt(ms - maxDeviation, ms + maxDeviation));
@@ -583,8 +537,5 @@ export {
   getSponsorLogo,
   sendNativeMessage,
   pingClientApp,
-  getPromptApiStatus,
-  initPromptApi,
-  getManagedLocalServiceStatus,
   meanSleep
 };
